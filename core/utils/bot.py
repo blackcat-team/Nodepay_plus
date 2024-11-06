@@ -26,6 +26,8 @@ class Bot:
 
     async def process_account(self, account):
         email, password = account.split(':', 1)
+        access_token = None
+        UID = None
 
         while not self.should_stop:
             result = await self.account_manager.mining_loop(email, password)
