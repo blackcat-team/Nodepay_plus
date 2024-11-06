@@ -26,9 +26,11 @@ class Bot:
 
     async def process_account(self, account):
         email, password = account.split(':', 1)
+        
         access_token = None
-        UID = None
-
+        uid = None
+        iter_count = 1
+        
         while not self.should_stop:
             if iter_count % 10 ==0:
                 access_token = None
