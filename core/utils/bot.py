@@ -30,7 +30,13 @@ class Bot:
         UID = None
 
         while not self.should_stop:
-            result = await self.account_manager.mining_loop(email, password)
+            if iter_count % 10 ==0:
+                access_token = None
+                uid = none
+            iter_count += 1
+            
+            result, access_token, uid = await self.account_manager.mining_loop(email, password, access_token, uid)
+        
             if result is True:
                 # logger.info(f"Account {email} completed mining cycle. Waiting 50 minutes.")
                 await asyncio.sleep(60 * 50)  # Wait 50 minutes
