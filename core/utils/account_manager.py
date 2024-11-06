@@ -69,7 +69,7 @@ class AccountManager:
         os.replace(temp_file, self.earnings_file)
         # logger.info(f"Updated earnings for {email}: {total_earning}")
 
-    async def process_account(self, email: str, password: str, action: str):
+    async def process_account(self, email: str, password: str, action: str, access_token: str = None, uid = None):
         if self.should_stop:
             logger.info(f"Stopping process for {email}")
             return None
@@ -103,7 +103,8 @@ class AccountManager:
                         str_to_file('new_accounts.txt', f'{email}:{password}')
                         logger.success(f'{email} | registered')
                     elif action == "mine":
-                        uid, access_token = await client.get_auth_token(self.captcha_service)
+                        if not access_token and not uid:
+                            uid, access_token = await client.login(self.captcha_service)
                         total_earning = await client.ping(uid, access_token)
                         self.update_earnings(email, total_earning)
                         logger.success(f"{email} | Points: {total_earning}")
@@ -117,7 +118,7 @@ class AccountManager:
                             user_agent=user_agent,
                             proxy_url=proxy_url
                         )
-                    return True
+                    return True, access_token, uid
             except CloudflareException as e:
                 logger.error(f'{email} | {e} error | Delaying...')
                 await asyncio.sleep(10 * 60)
@@ -146,9 +147,9 @@ class AccountManager:
     async def register_account(self, email: str, password: str):
         return await self.process_account(email, password, "register")
 
-    async def mining_loop(self, email: str, password: str):
+    async def mining_loop(self, email: str, password: str, access_token: str = None, uid = None):
         logger.info(f"Starting mining for account {email}")
-        return await self.process_account(email, password, "mine")
+        return await self.process_account(email, password, "mine", access_token, uid)
 
     def stop(self):
         logger.info("Stopping AccountManager")
